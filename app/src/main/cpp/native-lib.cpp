@@ -169,7 +169,7 @@ extern "C" JNIEXPORT jint JNICALL Java_com_druk_llamacpp_LlamaGenerationSession_
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_druk_llamacpp_LlamaGenerationSession_addMessage(JNIEnv *env,
+Java_com_druk_llamacpp_LlamaGenerationSession_addMessage__Ljava_lang_String_2(JNIEnv *env,
                                                          jobject thiz,
                                                          jstring message) {
     jclass clazz = env->GetObjectClass(thiz);
@@ -178,6 +178,23 @@ Java_com_druk_llamacpp_LlamaGenerationSession_addMessage(JNIEnv *env,
 
     const char* utfMessage = env->GetStringUTFChars(message, nullptr);
     session->addMessage(utfMessage);
+    env->ReleaseStringUTFChars(message, utfMessage);
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_druk_llamacpp_LlamaGenerationSession_addMessage__Ljava_lang_String_2Ljava_lang_String_2(JNIEnv *env,
+                                                                                              jobject thiz,
+                                                                                              jstring role,
+                                                                                              jstring message) {
+    jclass clazz = env->GetObjectClass(thiz);
+    jfieldID fid = env->GetFieldID(clazz, "nativeHandle", "J");
+    auto *session = (LlamaGenerationSession*)env->GetLongField(thiz, fid);
+
+    const char* utfRole = env->GetStringUTFChars(role, nullptr);
+    const char* utfMessage = env->GetStringUTFChars(message, nullptr);
+    session->addMessage(utfRole, utfMessage);
+    env->ReleaseStringUTFChars(role, utfRole);
     env->ReleaseStringUTFChars(message, utfMessage);
 }
 

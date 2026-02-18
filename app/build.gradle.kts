@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 android {
@@ -50,9 +51,9 @@ android {
         val hasKeyInfo = userKeystore.exists()
         named("debug") {
             storeFile = if (hasKeyInfo) userKeystore else localKeystore
-            storePassword = if (hasKeyInfo) System.getenv("STORE_PASSWORD") else "android"
-            keyAlias = if (hasKeyInfo) System.getenv("LM_PLAYGROUND_KEY_ALIAS") else "androiddebugkey"
-            keyPassword = if (hasKeyInfo) System.getenv("LM_PLAYGROUND_KEY_PASSWORD") else "android"
+            storePassword = System.getenv("STORE_PASSWORD") ?: "android"
+            keyAlias = System.getenv("LM_PLAYGROUND_KEY_ALIAS") ?: "androiddebugkey"
+            keyPassword = System.getenv("LM_PLAYGROUND_KEY_PASSWORD") ?: "android"
         }
     }
 
@@ -107,6 +108,8 @@ android {
         // our test APK to build (has no effect on our AARs)
         excludes += "/META-INF/AL2.0"
         excludes += "/META-INF/LGPL2.1"
+        excludes += "/META-INF/INDEX.LIST"
+        excludes += "/META-INF/io.netty.versions.properties"
     }
 }
 
@@ -117,6 +120,13 @@ dependencies {
 
     implementation(libs.kotlin.stdlib)
     implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.kotlinx.serialization.json)
+
+    implementation(libs.ktor.server.core)
+    implementation(libs.ktor.server.netty)
+    implementation(libs.ktor.server.content.negotiation)
+    implementation(libs.ktor.serialization.kotlinx.json)
+    implementation(libs.ktor.server.cors)
 
     implementation(libs.androidx.activity.compose)
 

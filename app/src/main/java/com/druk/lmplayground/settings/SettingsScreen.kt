@@ -15,13 +15,17 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.outlined.HelpOutline
 import androidx.compose.material.icons.outlined.Info
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.outlined.Dns
 import androidx.compose.material.icons.outlined.Policy
 import androidx.compose.material.icons.outlined.Storage
+import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -40,7 +44,10 @@ fun SettingsScreen(
     onModelsClick: () -> Unit,
     onPrivacyPolicyClick: () -> Unit,
     onFaqClick: () -> Unit,
-    appVersion: String
+    appVersion: String,
+    isServerEnabled: Boolean = false,
+    onServerEnabledChange: (Boolean) -> Unit = {},
+    serverUrl: String? = null
 ) {
     Scaffold(
         topBar = {
@@ -66,6 +73,42 @@ fun SettingsScreen(
                 subtitle = stringResource(R.string.models_subtitle),
                 onClick = onModelsClick
             )
+
+            Divider(modifier = Modifier.padding(horizontal = 16.dp))
+
+            // Server row
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.Dns,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(Modifier.width(16.dp))
+                Column(Modifier.weight(1f)) {
+                    Text(
+                        text = stringResource(R.string.local_server),
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                    Text(
+                        text = if (isServerEnabled && serverUrl != null)
+                            stringResource(R.string.server_running_at, serverUrl)
+                            else stringResource(R.string.local_server_subtitle),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                Switch(
+                    checked = isServerEnabled,
+                    onCheckedChange = onServerEnabledChange
+                )
+            }
+
+            Divider(modifier = Modifier.padding(horizontal = 16.dp))
 
             // Privacy Policy row
             SettingsRow(

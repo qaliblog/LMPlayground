@@ -82,6 +82,10 @@ LlamaGenerationSession::~LlamaGenerationSession() {
         llama_sampler_free(smpl);
     }
     if (messages != nullptr) {
+        for (auto & msg : *messages) {
+            free((void*)msg.role);
+            free((void*)msg.content);
+        }
         delete messages;
     }
     if (formatted != nullptr) {
@@ -126,8 +130,12 @@ void LlamaGenerationSession::init(llama_model *model) {
 }
 
 int LlamaGenerationSession::addMessage(const char *string) {
+    return addMessage("user", string);
+}
+
+int LlamaGenerationSession::addMessage(const char *role, const char *string) {
     // add the user input to the message list and format it
-    messages->push_back({"user", strdup(string)});
+    messages->push_back({strdup(role), strdup(string)});
     int new_len = llama_chat_apply_template(tmpl, messages->data(), messages->size(), true, formatted->data(), formatted->size());
     if (new_len > (int)formatted->size()) {
         formatted->resize(new_len);
