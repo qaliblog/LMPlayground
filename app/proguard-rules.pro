@@ -34,5 +34,20 @@
 -dontwarn org.openjsse.javax.net.ssl.SSLSocket
 -dontwarn org.openjsse.net.ssl.OpenJSSE
 
+# Netty / Ktor rules
+-dontwarn io.netty.**
+-dontwarn io.ktor.**
+-dontwarn org.apache.log4j.**
+-dontwarn org.apache.logging.log4j.**
+-dontwarn org.bouncycastle.**
+-dontwarn org.eclipse.jetty.npn.**
+-dontwarn org.slf4j.impl.StaticLoggerBinder
+-dontwarn reactor.blockhound.**
+-dontwarn java.lang.management.**
+
+-keep class io.netty.** { *; }
+-keep class io.ktor.** { *; }
+-keepattributes Signature, InnerClasses
+
 # Keep Core
 -keep class com.druk.llamacpp.** { *; }
