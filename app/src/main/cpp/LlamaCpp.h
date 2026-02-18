@@ -24,6 +24,8 @@ public:
 
     int addMessage(const char *string);
 
+    int addMessage(const char *role, const char *string);
+
     std::string getReport();
 
 private:

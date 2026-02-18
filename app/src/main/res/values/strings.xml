@@ -86,6 +86,9 @@
     <string name="send_feedback">Send Feedback</string>
     <string name="faq">FAQ</string>
     <string name="faq_subtitle">Frequently asked questions</string>
+    <string name="local_server">Local Server</string>
+    <string name="local_server_subtitle">Expose LLM as an OpenAI-compatible API</string>
+    <string name="server_running_at">Running at %s</string>
 
     <!-- FAQ -->
     <string name="faq_q1">What is LM Playground?</string>

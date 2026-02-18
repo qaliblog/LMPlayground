@@ -125,6 +125,8 @@ class ConversationViewModel(val app: Application) : AndroidViewModel(app) {
                 val llamaSession = llamaModel.createSession()
                 this@ConversationViewModel.llamaModel = llamaModel
                 this@ConversationViewModel.llamaSession = llamaSession
+                (app as? App)?.currentModel = llamaModel
+                (app as? App)?.currentModelInfo = modelInfo
                 _modelLoadingProgress.postValue(0f)
                 _loadedModelStatus.postValue(modelDescription)
                 _isModelReady.postValue(true)
@@ -189,7 +191,9 @@ class ConversationViewModel(val app: Application) : AndroidViewModel(app) {
                 llamaSession = null
                 llamaModel?.unloadModel()  // Native code closes its dup'd copies via fclose()
                 llamaModel = null
-                
+                (app as? App)?.currentModel = null
+                (app as? App)?.currentModelInfo = null
+
                 // Close the original fd AFTER model is unloaded
                 modelFileHandle?.close()
                 modelFileHandle = null

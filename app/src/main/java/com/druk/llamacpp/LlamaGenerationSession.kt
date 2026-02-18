@@ -31,6 +31,14 @@ class LlamaGenerationSession {
     external fun addMessage(message: String)
 
     /**
+     * Adds a message with a specific role to the current context of the session.
+     *
+     * @param role The role of the message (e.g., "system", "user", "assistant").
+     * @param message The message content.
+     */
+    external fun addMessage(role: String, message: String)
+
+    /**
      * Prints a report about the current state of the generation session to the console.
      */
     external fun printReport()
