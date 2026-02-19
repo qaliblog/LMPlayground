@@ -8,7 +8,7 @@ import android.net.Uri
 data class ModelInfo(
     val name: String,
     val filename: String,
-    val remoteUri: Uri,
+    val remoteUri: Uri? = null,
     val inputPrefix: String = "",
     val inputSuffix: String = "",
     val antiPrompt: Array<String> = emptyArray(),
@@ -34,7 +34,7 @@ data class ModelInfo(
     override fun hashCode(): Int {
         var result = name.hashCode()
         result = 31 * result + filename.hashCode()
-        result = 31 * result + remoteUri.hashCode()
+        result = 31 * result + (remoteUri?.hashCode() ?: 0)
         result = 31 * result + inputPrefix.hashCode()
         result = 31 * result + inputSuffix.hashCode()
         result = 31 * result + antiPrompt.contentHashCode()

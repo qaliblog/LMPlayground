@@ -1,6 +1,7 @@
 package com.druk.lmplayground.models
 
 import android.net.Uri
+import com.druk.lmplayground.storage.ModelFile
 
 object ModelInfoProvider {
     
@@ -141,12 +142,31 @@ object ModelInfoProvider {
     /**
      * Get models with their download status.
      */
-    fun getModelsWithStatus(downloadedFilenames: Set<String>): List<ModelWithStatus> {
-        return allModels.map { model ->
+    fun getModelsWithStatus(
+        downloadedFiles: List<ModelFile>,
+        formatSize: (Long) -> String
+    ): List<ModelWithStatus> {
+        val downloadedFilenames = downloadedFiles.map { it.name }.toSet()
+        val knownModels = allModels.map { model ->
             ModelWithStatus(
                 model = model,
                 isDownloaded = model.filename in downloadedFilenames
             )
         }
+
+        val unknownFiles = downloadedFiles.filter { it.name !in knownFilenames }
+        val unknownModels = unknownFiles.map { file ->
+            ModelWithStatus(
+                model = ModelInfo(
+                    name = file.name.removeSuffix(".gguf"),
+                    filename = file.name,
+                    remoteUri = null,
+                    description = "Local model • ${formatSize(file.sizeBytes)}"
+                ),
+                isDownloaded = true
+            )
+        }
+
+        return knownModels + unknownModels
     }
 }

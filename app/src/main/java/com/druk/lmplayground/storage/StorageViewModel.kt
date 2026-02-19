@@ -198,8 +198,9 @@ class StorageViewModel(application: Application) : AndroidViewModel(application)
                 _storageInfo.postValue(repository.getStorageInfo())
                 val modelFiles = repository.getModelFiles()
                 _downloadedModels.postValue(modelFiles)
-                val downloadedFilenames = modelFiles.map { it.name }.toSet()
-                _allModels.postValue(ModelInfoProvider.getModelsWithStatus(downloadedFilenames))
+                _allModels.postValue(ModelInfoProvider.getModelsWithStatus(modelFiles) { size ->
+                    android.text.format.Formatter.formatFileSize(context, size)
+                })
             }
             // Sync download state after models are loaded
             syncDownloadStateFromManager()
@@ -440,10 +441,11 @@ class StorageViewModel(application: Application) : AndroidViewModel(application)
     // ==================== Download Management ====================
     
     fun downloadModel(model: ModelInfo) {
+        val remoteUri = model.remoteUri ?: return
         // Set initial download progress
         updateDownloadProgress(model.name, 0f, "Starting download...")
         
-        val request = DownloadManager.Request(model.remoteUri)
+        val request = DownloadManager.Request(remoteUri)
         request.setTitle(model.filename)
         request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE)
         
@@ -473,7 +475,7 @@ class StorageViewModel(application: Application) : AndroidViewModel(application)
             val uriIndex = cursor.getColumnIndex(DownloadManager.COLUMN_URI)
             if (idIndex != -1 && uriIndex != -1) {
                 val downloadUri = cursor.getString(uriIndex)
-                if (downloadUri == model.remoteUri.toString()) {
+                if (downloadUri == model.remoteUri?.toString()) {
                     val downloadId = cursor.getLong(idIndex)
                     downloadManager.remove(downloadId)
                     downloadingModelIds.remove(downloadId)
@@ -534,7 +536,7 @@ class StorageViewModel(application: Application) : AndroidViewModel(application)
             val status = cursor.getInt(statusIndex)
             
             // Find matching model by URI
-            val modelInfo = modelsWithStatus.find { it.model.remoteUri.toString() == downloadUri }?.model ?: continue
+            val modelInfo = modelsWithStatus.find { it.model.remoteUri?.toString() == downloadUri }?.model ?: continue
             
             activeDownloadIds.add(downloadId)
             

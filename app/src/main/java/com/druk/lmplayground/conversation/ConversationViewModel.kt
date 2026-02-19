@@ -72,9 +72,11 @@ class ConversationViewModel(val app: Application) : AndroidViewModel(app) {
     fun loadModelList() {
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
-                val downloadedFilenames = storageRepository.getModelFiles().map { it.name }.toSet()
+                val modelFiles = storageRepository.getModelFiles()
                 _models.postValue(
-                    ModelInfoProvider.getModelsWithStatus(downloadedFilenames)
+                    ModelInfoProvider.getModelsWithStatus(modelFiles) { size ->
+                        android.text.format.Formatter.formatFileSize(app, size)
+                    }
                 )
             }
         }

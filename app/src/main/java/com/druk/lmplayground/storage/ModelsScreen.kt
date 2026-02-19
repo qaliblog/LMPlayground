@@ -88,7 +88,7 @@ fun ModelsScreen(
     
     // Split models into downloaded and available
     val downloadedModels = allModels.filter { it.isDownloaded }
-    val availableModels = allModels.filter { !it.isDownloaded }
+    val availableModels = allModels.filter { !it.isDownloaded && it.model.remoteUri != null }
 
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
@@ -141,7 +141,7 @@ fun ModelsScreen(
                     )
                 }
             } else {
-                items(downloadedModels, key = { it.model.name }) { modelWithStatus ->
+                items(downloadedModels, key = { it.model.filename }) { modelWithStatus ->
                     DownloadedModelItem(
                         model = modelWithStatus.model,
                         onDeleteClick = { modelToDelete = modelWithStatus.model }
@@ -161,7 +161,7 @@ fun ModelsScreen(
                     )
                 }
                 
-                items(availableModels, key = { it.model.name }) { modelWithStatus ->
+                items(availableModels, key = { it.model.filename }) { modelWithStatus ->
                     val model = modelWithStatus.model
                     val downloadProgress = downloadingModels[model.name]
                     AvailableModelItem(
