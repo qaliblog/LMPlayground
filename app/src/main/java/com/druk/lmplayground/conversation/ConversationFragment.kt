@@ -44,6 +44,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.unit.dp
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.druk.lmplayground.MainActivity
@@ -55,7 +56,7 @@ import kotlinx.coroutines.launch
 
 class ConversationFragment : Fragment() {
 
-    private val viewModel: ConversationViewModel by viewModels()
+    private val viewModel: ConversationViewModel by activityViewModels()
     private val storageViewModel: StorageViewModel by viewModels()
 
     @OptIn(ExperimentalMaterial3Api::class)

@@ -91,6 +91,26 @@
     <string name="server_running_at">Running at %s</string>
     <string name="api_model_name">API Model: %s</string>
 
+    <!-- Model Settings -->
+    <string name="model_settings">Model Settings</string>
+    <string name="context_length">Context Length</string>
+    <string name="batch_size">Batch Size</string>
+    <string name="threads">Threads</string>
+    <string name="temperature">Temperature</string>
+    <string name="top_p">Top P</string>
+    <string name="min_p">Min P</string>
+    <string name="top_k">Top K</string>
+    <string name="repeat_penalty">Repeat Penalty</string>
+    <string name="stop_tokens">Stop Tokens</string>
+    <string name="stop_tokens_hint">Comma separated tokens</string>
+    <string name="load_model">Load</string>
+    <string name="reload_model">Reload</string>
+    <string name="eject_model">Eject</string>
+    <string name="no_model_loaded">No model loaded</string>
+    <string name="model_loaded_success">Model loaded successfully</string>
+    <string name="model_reload_success">Model reloaded successfully</string>
+    <string name="model_eject_success">Model ejected</string>
+
     <!-- FAQ -->
     <string name="faq_q1">What is LM Playground?</string>
     <string name="faq_a1">LM Playground lets you run large language models directly on your Android device. All processing happens locally \u2013 no cloud servers needed.</string>

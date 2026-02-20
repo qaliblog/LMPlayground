@@ -1,7 +1,9 @@
 package com.druk.lmplayground.server
 
+import android.content.Context
 import com.druk.llamacpp.LlamaGenerationCallback
 import com.druk.llamacpp.LlamaModel
+import com.druk.lmplayground.storage.StoragePreferences
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.application.call
 import io.ktor.server.application.install
@@ -24,7 +26,9 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.util.UUID
 
-class LlamaServer(private val getModel: () -> LlamaModel?) {
+class LlamaServer(private val context: Context, private val getModel: () -> LlamaModel?) {
+
+    private val storagePreferences = StoragePreferences(context)
 
     companion object {
         const val DEFAULT_MODEL_NAME = "local-model"
@@ -61,7 +65,17 @@ class LlamaServer(private val getModel: () -> LlamaModel?) {
                     return@post
                 }
 
-                val session = model.createSession()
+                val session = model.createSession(
+                    n_ctx = storagePreferences.contextLength,
+                    n_batch = storagePreferences.batchSize,
+                    n_threads = storagePreferences.threads,
+                    n_threads_batch = storagePreferences.threads,
+                    temp = request.temperature ?: storagePreferences.temperature,
+                    top_p = request.top_p ?: storagePreferences.topP,
+                    min_p = storagePreferences.minP,
+                    top_k = storagePreferences.topK,
+                    repeat_penalty = storagePreferences.repeatPenalty
+                )
                 try {
                     for (message in request.messages) {
                         session.addMessage(message.role, message.content)

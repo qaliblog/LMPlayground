@@ -59,7 +59,7 @@ class LlamaServerService : Service() {
 
         if (prefs.isServerEnabled) {
             if (server == null) {
-                server = LlamaServer {
+                server = LlamaServer(this) {
                     (application as? App)?.currentModel
                 }
                 server?.start()
