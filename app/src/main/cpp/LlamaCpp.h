@@ -16,7 +16,16 @@ public:
 
     ~LlamaGenerationSession();
 
-    void init(llama_model *model);
+    void init(llama_model *model,
+              int n_ctx,
+              int n_batch,
+              int n_threads,
+              int n_threads_batch,
+              float temp,
+              float top_p,
+              float min_p,
+              int top_k,
+              float repeat_penalty);
 
     void printReport();
 
@@ -47,7 +56,16 @@ public:
     LlamaModel() = default;
     ~LlamaModel() = default;
 
-    LlamaGenerationSession* createGenerationSession();
+    LlamaGenerationSession* createGenerationSession(
+            int n_ctx,
+            int n_batch,
+            int n_threads,
+            int n_threads_batch,
+            float temp,
+            float top_p,
+            float min_p,
+            int top_k,
+            float repeat_penalty);
     void loadModel(const std::string &modelPath,
                    int32_t n_gpu_layers,
                    llama_progress_callback progress_callback,

@@ -13,6 +13,7 @@ import com.druk.llamacpp.LlamaGenerationSession
 import com.druk.llamacpp.LlamaModel
 import com.druk.llamacpp.LlamaProgressCallback
 import com.druk.lmplayground.App
+import com.druk.lmplayground.server.LlamaServerService
 import com.druk.lmplayground.models.ModelInfo
 import com.druk.lmplayground.models.ModelInfoProvider
 import com.druk.lmplayground.models.ModelWithStatus
@@ -72,9 +73,11 @@ class ConversationViewModel(val app: Application) : AndroidViewModel(app) {
     fun loadModelList() {
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
-                val downloadedFilenames = storageRepository.getModelFiles().map { it.name }.toSet()
+                val modelFiles = storageRepository.getModelFiles()
                 _models.postValue(
-                    ModelInfoProvider.getModelsWithStatus(downloadedFilenames)
+                    ModelInfoProvider.getModelsWithStatus(modelFiles) { size ->
+                        android.text.format.Formatter.formatFileSize(app, size)
+                    }
                 )
             }
         }
@@ -122,11 +125,24 @@ class ConversationViewModel(val app: Application) : AndroidViewModel(app) {
                 )
                 val modelSize = llamaModel.getModelSize()
                 val modelDescription = Formatter.formatFileSize(app, modelSize)
-                val llamaSession = llamaModel.createSession()
+                val llamaSession = llamaModel.createSession(
+                    n_ctx = storagePreferences.contextLength,
+                    n_batch = storagePreferences.batchSize,
+                    n_threads = storagePreferences.threads,
+                    n_threads_batch = storagePreferences.threads,
+                    temp = storagePreferences.temperature,
+                    top_p = storagePreferences.topP,
+                    min_p = storagePreferences.minP,
+                    top_k = storagePreferences.topK,
+                    repeat_penalty = storagePreferences.repeatPenalty
+                )
                 this@ConversationViewModel.llamaModel = llamaModel
                 this@ConversationViewModel.llamaSession = llamaSession
                 (app as? App)?.currentModel = llamaModel
                 (app as? App)?.currentModelInfo = modelInfo
+                withContext(Dispatchers.Main) {
+                    LlamaServerService.updateStatus(app)
+                }
                 _modelLoadingProgress.postValue(0f)
                 _loadedModelStatus.postValue(modelDescription)
                 _isModelReady.postValue(true)
@@ -144,7 +160,10 @@ class ConversationViewModel(val app: Application) : AndroidViewModel(app) {
             )
         )
 
-        val antiPrompt = _loadedModel.value?.antiPrompt
+        val modelAntiPrompt = _loadedModel.value?.antiPrompt ?: emptyArray()
+        val settingsAntiPrompt = storagePreferences.stopTokens.split(",").map { it.trim() }.filter { it.isNotEmpty() }.toTypedArray()
+        val antiPrompt = modelAntiPrompt + settingsAntiPrompt
+
         _isGenerating.postValue(true)
         generatingJob = viewModelScope.launch {
             withContext(Dispatchers.Default) {
@@ -156,7 +175,7 @@ class ConversationViewModel(val app: Application) : AndroidViewModel(app) {
                     override fun newTokens(newTokens: ByteArray) {
                         responseByteArray += newTokens
                         var string = String(responseByteArray, Charsets.UTF_8)
-                        for (suffix in antiPrompt ?: emptyArray()) {
+                        for (suffix in antiPrompt) {
                             string = string.removeSuffix(suffix)
                             string = string.removeSuffix(suffix + "\n")
                         }
@@ -193,6 +212,9 @@ class ConversationViewModel(val app: Application) : AndroidViewModel(app) {
                 llamaModel = null
                 (app as? App)?.currentModel = null
                 (app as? App)?.currentModelInfo = null
+                withContext(Dispatchers.Main) {
+                    LlamaServerService.updateStatus(app)
+                }
 
                 // Close the original fd AFTER model is unloaded
                 modelFileHandle?.close()

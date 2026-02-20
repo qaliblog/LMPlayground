@@ -93,19 +93,27 @@ LlamaGenerationSession::~LlamaGenerationSession() {
     }
 }
 
-void LlamaGenerationSession::init(llama_model *model) {
+void LlamaGenerationSession::init(llama_model *model,
+                                  int n_ctx,
+                                  int n_batch,
+                                  int n_threads,
+                                  int n_threads_batch,
+                                  float temp,
+                                  float top_p,
+                                  float min_p,
+                                  int top_k,
+                                  float repeat_penalty) {
 
     vocab = llama_model_get_vocab(model);
 
-    int n_threads = std::max(1, std::min(8, (int) sysconf(_SC_NPROCESSORS_ONLN) - 2));
-    LOGi("Using %d threads", n_threads);
+    LOGi("Using %d threads, n_ctx %d, n_batch %d", n_threads, n_ctx, n_batch);
 
     // initialize the context
     llama_context_params ctx_params = llama_context_default_params();
-    ctx_params.n_ctx = 2048;
-    ctx_params.n_batch = 2048;
+    ctx_params.n_ctx = n_ctx;
+    ctx_params.n_batch = n_batch;
     ctx_params.n_threads       = n_threads;
-    ctx_params.n_threads_batch = n_threads;
+    ctx_params.n_threads_batch = n_threads_batch;
 
     ctx = llama_init_from_model(model, ctx_params);
     if (!ctx) {
@@ -118,10 +126,16 @@ void LlamaGenerationSession::init(llama_model *model) {
 
     // initialize the sampler
     smpl = llama_sampler_chain_init(smplParams);
-    llama_sampler_chain_add(smpl, llama_sampler_init_greedy());
-    llama_sampler_chain_add(smpl, llama_sampler_init_min_p(0.05f, 1));
-    llama_sampler_chain_add(smpl, llama_sampler_init_temp(0.8f));
-    llama_sampler_chain_add(smpl, llama_sampler_init_dist(LLAMA_DEFAULT_SEED));
+    if (temp <= 0.0f) {
+        llama_sampler_chain_add(smpl, llama_sampler_init_greedy());
+    } else {
+        llama_sampler_chain_add(smpl, llama_sampler_init_top_k(top_k));
+        llama_sampler_chain_add(smpl, llama_sampler_init_top_p(top_p, 1));
+        llama_sampler_chain_add(smpl, llama_sampler_init_min_p(min_p, 1));
+        llama_sampler_chain_add(smpl, llama_sampler_init_temp(temp));
+        llama_sampler_chain_add(smpl, llama_sampler_init_penalties(-1, repeat_penalty, 0.0f, 0.0f));
+        llama_sampler_chain_add(smpl, llama_sampler_init_dist(LLAMA_DEFAULT_SEED));
+    }
 
     messages = new std::vector<llama_chat_message>();
     formatted = new std::vector<char>(ctx_params.n_ctx);

@@ -46,9 +46,18 @@ void LlamaModel::loadModel(const std::string &modelPath,
     }
 }
 
-LlamaGenerationSession* LlamaModel::createGenerationSession() {
+LlamaGenerationSession* LlamaModel::createGenerationSession(
+        int n_ctx,
+        int n_batch,
+        int n_threads,
+        int n_threads_batch,
+        float temp,
+        float top_p,
+        float min_p,
+        int top_k,
+        float repeat_penalty) {
     auto *session = new LlamaGenerationSession();
-    session->init(model);
+    session->init(model, n_ctx, n_batch, n_threads, n_threads_batch, temp, top_p, min_p, top_k, repeat_penalty);
     return session;
 }
 
