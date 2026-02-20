@@ -13,6 +13,7 @@ import com.druk.llamacpp.LlamaGenerationSession
 import com.druk.llamacpp.LlamaModel
 import com.druk.llamacpp.LlamaProgressCallback
 import com.druk.lmplayground.App
+import com.druk.lmplayground.server.LlamaServerService
 import com.druk.lmplayground.models.ModelInfo
 import com.druk.lmplayground.models.ModelInfoProvider
 import com.druk.lmplayground.models.ModelWithStatus
@@ -129,6 +130,9 @@ class ConversationViewModel(val app: Application) : AndroidViewModel(app) {
                 this@ConversationViewModel.llamaSession = llamaSession
                 (app as? App)?.currentModel = llamaModel
                 (app as? App)?.currentModelInfo = modelInfo
+                withContext(Dispatchers.Main) {
+                    LlamaServerService.updateStatus(app)
+                }
                 _modelLoadingProgress.postValue(0f)
                 _loadedModelStatus.postValue(modelDescription)
                 _isModelReady.postValue(true)
@@ -195,6 +199,9 @@ class ConversationViewModel(val app: Application) : AndroidViewModel(app) {
                 llamaModel = null
                 (app as? App)?.currentModel = null
                 (app as? App)?.currentModelInfo = null
+                withContext(Dispatchers.Main) {
+                    LlamaServerService.updateStatus(app)
+                }
 
                 // Close the original fd AFTER model is unloaded
                 modelFileHandle?.close()

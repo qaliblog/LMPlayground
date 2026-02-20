@@ -36,6 +36,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.druk.lmplayground.R
+import com.druk.lmplayground.server.LlamaServer
 import com.druk.lmplayground.theme.PlaygroundTheme
 
 @Composable
@@ -101,6 +102,13 @@ fun SettingsScreen(
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
+                    if (isServerEnabled) {
+                        Text(
+                            text = stringResource(R.string.api_model_name, LlamaServer.DEFAULT_MODEL_NAME),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
                 Switch(
                     checked = isServerEnabled,

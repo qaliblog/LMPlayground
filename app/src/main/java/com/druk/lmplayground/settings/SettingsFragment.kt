@@ -51,11 +51,7 @@ class SettingsFragment : Fragment() {
                     onServerEnabledChange = { enabled ->
                         isServerEnabled = enabled
                         prefs.isServerEnabled = enabled
-                        if (enabled) {
-                            LlamaServerService.start(context)
-                        } else {
-                            LlamaServerService.stop(context)
-                        }
+                        LlamaServerService.updateStatus(context)
                     },
                     serverUrl = serverUrl
                 )

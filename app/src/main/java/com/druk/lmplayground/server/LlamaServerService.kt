@@ -12,6 +12,7 @@ import androidx.core.app.NotificationCompat
 import com.druk.lmplayground.App
 import com.druk.lmplayground.MainActivity
 import com.druk.lmplayground.R
+import com.druk.lmplayground.storage.StoragePreferences
 import com.druk.lmplayground.util.NetworkUtils
 
 class LlamaServerService : Service() {
@@ -31,6 +32,17 @@ class LlamaServerService : Service() {
             val intent = Intent(context, LlamaServerService::class.java)
             context.stopService(intent)
         }
+
+        fun updateStatus(context: Context) {
+            val prefs = StoragePreferences(context)
+            val app = context.applicationContext as App
+            val shouldRun = prefs.isServerEnabled || app.currentModel != null
+            if (shouldRun) {
+                start(context)
+            } else {
+                stop(context)
+            }
+        }
     }
 
     override fun onCreate() {
@@ -38,11 +50,25 @@ class LlamaServerService : Service() {
         createNotificationChannel()
         val notification = createNotification()
         startForeground(NOTIFICATION_ID, notification)
+    }
 
-        server = LlamaServer {
-            (application as? App)?.currentModel
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        val prefs = StoragePreferences(this)
+        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        notificationManager.notify(NOTIFICATION_ID, createNotification())
+
+        if (prefs.isServerEnabled) {
+            if (server == null) {
+                server = LlamaServer {
+                    (application as? App)?.currentModel
+                }
+                server?.start()
+            }
+        } else {
+            server?.stop()
+            server = null
         }
-        server?.start()
+        return START_STICKY
     }
 
     override fun onDestroy() {
@@ -71,13 +97,25 @@ class LlamaServerService : Service() {
                 PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_IMMUTABLE)
             }
 
-        val ipAddress = NetworkUtils.getLocalIpAddress() ?: "localhost"
-        val url = "http://$ipAddress:8080/v1"
+        val prefs = StoragePreferences(this)
+        val app = applicationContext as App
+        val isServerEnabled = prefs.isServerEnabled
+        val isModelLoaded = app.currentModel != null
+
+        val title = if (isServerEnabled) "Llama Server Running" else "LM Playground Active"
+        val content = if (isServerEnabled) {
+            val ipAddress = NetworkUtils.getLocalIpAddress() ?: "localhost"
+            "Listening on http://$ipAddress:8080/v1"
+        } else if (isModelLoaded) {
+            "Model is loaded in background"
+        } else {
+            "App is running in background"
+        }
 
         return NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("Llama Server Running")
-            .setContentText("Listening on $url")
-            .setSmallIcon(R.drawable.ic_launcher_foreground) // Use existing icon
+            .setContentTitle(title)
+            .setContentText(content)
+            .setSmallIcon(R.drawable.ic_launcher_foreground)
             .setContentIntent(pendingIntent)
             .build()
     }

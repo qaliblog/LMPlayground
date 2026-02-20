@@ -89,6 +89,7 @@
     <string name="local_server">Local Server</string>
     <string name="local_server_subtitle">Expose LLM as an OpenAI-compatible API</string>
     <string name="server_running_at">Running at %s</string>
+    <string name="api_model_name">API Model: %s</string>
 
     <!-- FAQ -->
     <string name="faq_q1">What is LM Playground?</string>

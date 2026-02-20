@@ -26,6 +26,10 @@ import java.util.UUID
 
 class LlamaServer(private val getModel: () -> LlamaModel?) {
 
+    companion object {
+        const val DEFAULT_MODEL_NAME = "local-model"
+    }
+
     private val json = Json { ignoreUnknownKeys = true }
 
     private val server = embeddedServer(Netty, port = 8080) {
@@ -46,7 +50,7 @@ class LlamaServer(private val getModel: () -> LlamaModel?) {
         routing {
             get("/v1/models") {
                 call.respond(mapOf("object" to "list", "data" to listOf(
-                    mapOf("id" to "local-model", "object" to "model", "created" to 1677610602, "owned_by" to "library")
+                    mapOf("id" to DEFAULT_MODEL_NAME, "object" to "model", "created" to 1677610602, "owned_by" to "library")
                 )))
             }
             post("/v1/chat/completions") {
@@ -80,7 +84,7 @@ class LlamaServer(private val getModel: () -> LlamaModel?) {
                             withContext(Dispatchers.Default) {
                                 val id = UUID.randomUUID().toString()
                                 val created = System.currentTimeMillis() / 1000
-                                val modelName = request.model ?: "local-model"
+                                val modelName = request.model ?: DEFAULT_MODEL_NAME
 
                                 // Generate in a separate thread/coroutine
                                 val job = launch {
@@ -140,7 +144,7 @@ class LlamaServer(private val getModel: () -> LlamaModel?) {
                         val response = ChatCompletionResponse(
                             id = UUID.randomUUID().toString(),
                             created = System.currentTimeMillis() / 1000,
-                            model = request.model ?: "local-model",
+                            model = request.model ?: DEFAULT_MODEL_NAME,
                             choices = listOf(
                                 ChatChoice(
                                     index = 0,
